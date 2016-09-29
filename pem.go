@@ -1,0 +1,91 @@
+package googleid
+
+import (
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
+	"strconv"
+)
+
+var googleCerts = []string{`
+-----BEGIN CERTIFICATE-----
+MIIDJjCCAg6gAwIBAgIIDzn94FN+iBkwDQYJKoZIhvcNAQEFBQAwNjE0MDIGA1UE
+AxMrZmVkZXJhdGVkLXNpZ25vbi5zeXN0ZW0uZ3NlcnZpY2VhY2NvdW50LmNvbTAe
+Fw0xNjA5MjcxMTQzMzRaFw0xNjA5MzAxMjEzMzRaMDYxNDAyBgNVBAMTK2ZlZGVy
+YXRlZC1zaWdub24uc3lzdGVtLmdzZXJ2aWNlYWNjb3VudC5jb20wggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQCiK+r0VpgQjkotlxDI2/CTJFBEd1MCN9dl
+dSjFtXHJNAf2/e93HPKGXrjNL5ar5H2QHhRnDsQnnwyOPzyiNG0trkzsYnxWYMwh
+RrZ1A1WcSHQ1CQ+qjPSO4Htq+UPvGZo51bswnOWm+TBlqeQ4jpfWGwCz4PnwUILm
+/j4Jln9DLAks8IA+XIP/VQlFsfyC2atdz9otrK0ADG+/S7rLkBgqzpEGF705dHO9
+Om7TssPBDDD1wu58Adk6qdwoWJpNNLVwYAI7qxeH/ULKSy+2d/aGm5DUOUohdO+L
+JvJ+1rZc1r4HhwN12yAMn9+mQgniMBqYlIQXvNCyxwKhq1Wb2B0VAgMBAAGjODA2
+MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMBYGA1UdJQEB/wQMMAoGCCsG
+AQUFBwMCMA0GCSqGSIb3DQEBBQUAA4IBAQCR4WAhnQaJgW4/UgtPOM8Sv0auIEmk
+a5T1IOJYQ4f1wxPoZoe4/ecdKeRCi/XvyR7WHPrgGCrADaqicRGQ7ASoXYRVB785
+zuRKdQYs+dJKYMnydSde3B8hg2ZRzxtEG/FyVBhRco55dM03+HgdVtspop2sjTB6
+BcqlR2i9yun6EgxGCXehigcYbY8WexseC2zIo6HMVwCA9It2CRUp7y1Rdc3BfEKu
+Gq9nVgIWaJPZ7SdK52LebxKBvqzk1lFtG+FWDXLxUNGQ042WYpj2CsNTUNClrGKs
+GR2lvascB8xVxNDTM0SRS2WuWKfC98vuChFI2+WUCj7nd9fVhnilxKai
+-----END CERTIFICATE-----
+`, `
+-----BEGIN CERTIFICATE-----
+MIIDJjCCAg6gAwIBAgIIV71koILaBkIwDQYJKoZIhvcNAQEFBQAwNjE0MDIGA1UE
+AxMrZmVkZXJhdGVkLXNpZ25vbi5zeXN0ZW0uZ3NlcnZpY2VhY2NvdW50LmNvbTAe
+Fw0xNjA5MjgxMTQzMzRaFw0xNjEwMDExMjEzMzRaMDYxNDAyBgNVBAMTK2ZlZGVy
+YXRlZC1zaWdub24uc3lzdGVtLmdzZXJ2aWNlYWNjb3VudC5jb20wggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDaGzC+ufnE8SeOl33N06ujM19HbbY0hqiT
+0pIQ7parG5BYrXNDS8ie50XwQmWDOWqXva2MBPyauvnTnqMtpXCkr/ge6gE3yxyP
++Q0E5UCJ+uu7Uv59p9Yf6c5CODT5UG6vwBftrCbVevBSAn81Orz+s3Ws4wGc6cph
+Qnz2sAzAEiX0DHZUO1hRm9UbmTQSOYlk6oIZZNg3wjcx27Ayts4vg81802f8QVjq
+5cEaau48Dlt5o1KVnkR4zQxOhaez661GgFea1ZnUA7D0ZyPlipAgBtRcHd9aZr/0
+BQ6vsZr99d9g8voMN6BE6Fv+8fkIQlBR3aschedhPRjFXnUNLugbAgMBAAGjODA2
+MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMBYGA1UdJQEB/wQMMAoGCCsG
+AQUFBwMCMA0GCSqGSIb3DQEBBQUAA4IBAQBo+aA9KmddTIf58F1aBfsjJS0TDDL2
+jn88ClYNhVwO7ehNnE02OQiMxqu6ZxWqbGmiz6CCDHLWQNMCccjWXMdUlXQGxuE7
+pdX1KUlG780IK5mwxLYcUZYlHgZSFHqfG4Dj/aVW4W8XCre+60rTcrnkYOoX59Nb
+9DZwfge7eyE52Qj7cg94jHrGBpbJ6JZrv0pbpgBdxMO6XHPmCYpCc+l0Ria5qdju
+zVNbQ6JdlH0AO6qd5MTti1krfwTuhGIKYBq/H/jFuwubqhwCLtejhVKgDwyXrOl/
+r9Uo56CjkI5QSQXcewpXoZi58FfFA5zhQioZGsnugKo1a3bPYd1fd1eV
+-----END CERTIFICATE-----
+`, `
+-----BEGIN CERTIFICATE-----
+MIIDJjCCAg6gAwIBAgIIMs4XqR4LvvIwDQYJKoZIhvcNAQEFBQAwNjE0MDIGA1UE
+AxMrZmVkZXJhdGVkLXNpZ25vbi5zeXN0ZW0uZ3NlcnZpY2VhY2NvdW50LmNvbTAe
+Fw0xNjA5MjYxMTQzMzRaFw0xNjA5MjkxMjEzMzRaMDYxNDAyBgNVBAMTK2ZlZGVy
+YXRlZC1zaWdub24uc3lzdGVtLmdzZXJ2aWNlYWNjb3VudC5jb20wggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDQkOCAUObI7p9kWAaF2MScv9o89rPw3z1Z
+CevpqH58+ula+fIlIAimL5Ozh5NV7/lFWEHKpAS37/KF85htXWJXodyQRb1ezyQL
+cu5NUw3f7blmOc05yVHnPAx6mwdrlGfYP/pQe5ckBkhTuZ3S/NKGxp+FeuFmzR2N
+fweInnPSVWJy4xtjsktOC5vUrcnb7y954Y9aggseilsHVfJQ2fBcbXvnBRWeZPeq
+4UeHWqyLT+0kdqCLluifATE/6tKRb0mzGR6TNJismjBsqHbe/T+QKuVjEhGco1P1
+H6Ff7xN4lXm0WRCYk92ibOz9182xsEbDrP1N41nmoyoqHLhw2G/HAgMBAAGjODA2
+MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMBYGA1UdJQEB/wQMMAoGCCsG
+AQUFBwMCMA0GCSqGSIb3DQEBBQUAA4IBAQAatI5b48qDmfhNwZ9WwFKhi5TpWsbn
+ZlVblbBNK+3MurJi/oI6uBZ23e47IMPOTli39OiPVwBUkFAEexw0FlVufrIGlP+I
+poPDlIs05000q2acnosHro92gJAcAbGdkykCBdUikhn+yz9OwaerdB1aojB57fbc
+cNqDD9phMhRdcQMx+U8eMg1rD/QTvdiY8xvCLx8PWZ8oqlsttXGoNUWsPSUUwrMs
+Ox/uOMhtRCFcKO+84Lk946iQ5ymcxvrtUIg43GleXSX1mZD0i6rSuIbHTVsQj0IE
+lX8r/W84WRhY0X3e38QJW5uIuYij8MhV+XGgxs342/QG81L8iTCUqMlG
+-----END CERTIFICATE-----
+`,
+}
+
+var GoogleKeys []*rsa.PublicKey
+
+func init() {
+	for i, cert := range googleCerts {
+		block, _ := pem.Decode([]byte(cert))
+		if block == nil {
+			panic("failed to parse Google certificate #" + strconv.Itoa(i))
+		}
+		c, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			panic("failed to parse Google certificate #" + strconv.Itoa(i) + ": " + err.Error())
+		}
+		publicKey, ok := c.PublicKey.(*rsa.PublicKey)
+		if !ok {
+			panic("supplied certificate #" + strconv.Itoa(i) + " is not using an RSA public key")
+		}
+		GoogleKeys = append(GoogleKeys, publicKey)
+	}
+}

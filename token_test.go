@@ -1,0 +1,20 @@
+package googleid
+
+import "testing"
+
+const token = `eyJhbGciOiJSUzI1NiIsImtpZCI6IjAzYzFjMGRiNzM2Y2ZkMTMxNDFhY2QxOGQ4ZGNiMzM2MGFhNDU5MDkifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXRfaGFzaCI6ImNnaXY2TzBaUnlzemVEcGZzeXJpVVEiLCJhdWQiOiI4MzEzNzExNzA5MzQtdWRhcGl0NWpoamo1NnBmdDVsMmRyYzlnamhmZWNsZjMuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDg2MDg0MDQwNzkxMzcyMTg2NjciLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiODMxMzcxMTcwOTM0LXVkYXBpdDVqaGpqNTZwZnQ1bDJkcmM5Z2poZmVjbGYzLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiaGQiOiJpbXByYWN0aWNhbGxhYnMuY29tIiwiZW1haWwiOiJwYWRkeUBpbXByYWN0aWNhbGxhYnMuY29tIiwiaWF0IjoxNDc1MTA4MjMxLCJleHAiOjE0NzUxMTE4MzEsIm5hbWUiOiJQYWRkeSBGb3JhbiIsInBpY3R1cmUiOiJodHRwczovL2xoNC5nb29nbGV1c2VyY29udGVudC5jb20vLVo2SDJmYzVlbFUwL0FBQUFBQUFBQUFJL0FBQUFBQUFBQUJNLzZKUm13UHdNTm44L3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJQYWRkeSIsImZhbWlseV9uYW1lIjoiRm9yYW4iLCJsb2NhbGUiOiJlbiJ9.ZBalWXBAtI8vUgtxuPupZgJdJu1XseDLQ3ldRSCqfXgTI2RrJNU8UTw2Ao0NknYYSr2p89WjmB0PCwr1_L9qFypIeTvmj8JKEiPZFNbaKcug4eCZxvFe89Og-XL8Nph55cVrzOXrX2MnIOCneBgWVgol3imJl8wZ6r_xaMyyAapO_9nPqeAqDZkBjxhoY2XtLms3e9m2G4r6Aru74d36b_z7GBJxAuxqc30XIXs8nK0h8P7LNriqDvbcRuWJtl0SU31RbVJKwlVI4H4iN7yf0lhY0pZNmLqMQ2z30ZlXjRHQhOwG1cjEFf0kXki_huSlxOc-z5wVVk7cfqP_GVjpkA`
+
+func TestVerify(t *testing.T) {
+	err := Verify(token, GoogleKeys...)
+	if err != nil {
+		t.Fatalf("Error verifying: %+v\n", err)
+	}
+}
+
+func TestDecode(t *testing.T) {
+	tok, err := Decode(token)
+	if err != nil {
+		t.Fatalf("Error decoding token: %+v\n", err)
+	}
+	t.Logf("Token: %+v\n", tok)
+}
