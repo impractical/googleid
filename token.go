@@ -54,8 +54,8 @@ func Decode(payload string) (*Token, error) {
 	return t, nil
 }
 
-func Verify(ctx context.Context, token string, clientIDs []string, provider *oidc.Provider) error {
-	tok, err := provider.NewVerifier(ctx, oidc.VerifyExpiry()).Verify(token)
+func Verify(ctx context.Context, token string, clientIDs []string, verifier *oidc.IDTokenVerifier) error {
+	tok, err := verifier.Verify(token)
 	if err != nil {
 		return err
 	}
