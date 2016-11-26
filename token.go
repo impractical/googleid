@@ -2,14 +2,17 @@ package googleid
 
 import (
 	"bytes"
-	"crypto"
-	"crypto/rsa"
-	"crypto/sha256"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"strings"
-	"time"
+
+	"github.com/ericchiang/oidc"
+)
+
+var (
+	ErrInvalidAudience = errors.New("Invalid token audience.")
 )
 
 type Token struct {
@@ -51,41 +54,17 @@ func Decode(payload string) (*Token, error) {
 	return t, nil
 }
 
-func Verify(token string, keys ...*rsa.PublicKey) error {
-	parts := strings.Split(token, ".")
-	if len(parts) != 3 {
-		return errors.New("invalid token")
-	}
-
-	signedContent := parts[0] + "." + parts[1]
-	signatureString, err := base64.RawURLEncoding.DecodeString(parts[2])
+func Verify(ctx context.Context, token string, clientIDs []string, provider *oidc.Provider) error {
+	tok, err := provider.NewVerifier(ctx, oidc.VerifyExpiry()).Verify(token)
 	if err != nil {
 		return err
 	}
-
-	h := sha256.New()
-	h.Write([]byte(signedContent))
-	for _, key := range keys {
-		err = rsa.VerifyPKCS1v15(key, crypto.SHA256, h.Sum(nil), []byte(signatureString))
-		if err == nil {
-			return nil
+	for _, aud := range tok.Audience {
+		for _, id := range clientIDs {
+			if aud == id {
+				return nil
+			}
 		}
 	}
-	return err
-}
-
-func Valid(token Token, clientID, domain string, keys ...*rsa.PublicKey) bool {
-	if token.Exp < time.Now().UTC().Unix() {
-		return false
-	}
-	if clientID != token.Aud {
-		return false
-	}
-	if token.Iss != "accounts.google.com" && token.Iss != "https://accounts.google.com" {
-		return false
-	}
-	if token.Hd != "" && token.Hd != domain {
-		return false
-	}
-	return Verify(token.source, keys...) == nil
+	return ErrInvalidAudience
 }
