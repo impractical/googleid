@@ -8,7 +8,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/ericchiang/oidc"
+	"github.com/coreos/go-oidc"
 )
 
 var (
@@ -55,7 +55,7 @@ func Decode(payload string) (*Token, error) {
 }
 
 func Verify(ctx context.Context, token string, clientIDs []string, verifier *oidc.IDTokenVerifier) error {
-	tok, err := verifier.Verify(token)
+	tok, err := verifier.Verify(ctx, token)
 	if err != nil {
 		return err
 	}
