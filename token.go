@@ -12,9 +12,11 @@ import (
 )
 
 var (
+	// ErrInvalidAudience is returned when the token audience does not match the specified client IDs.
 	ErrInvalidAudience = errors.New("Invalid token audience.")
 )
 
+// Token is a representation of the information encoded in a Google ID token.
 type Token struct {
 	Iss   string `json:"iss"`
 	Scope string `json:"scope,omitempty"`
@@ -36,6 +38,9 @@ type Token struct {
 	source string
 }
 
+// Decode parses the passed payload into a Token. Note that
+// Decode does not validate the Token's validity, just parses
+// it into a struct.
 func Decode(payload string) (*Token, error) {
 	s := strings.Split(payload, ".")
 	if len(s) < 2 {
@@ -54,6 +59,10 @@ func Decode(payload string) (*Token, error) {
 	return t, nil
 }
 
+// Verify checks that the passed token is valid, as determined
+// by the passed verifier. It also checks that the token was issued
+// to one of the specified client IDs. Note that Verify does not
+// do nonce validation, which must be done by the caller.
 func Verify(ctx context.Context, token string, clientIDs []string, verifier *oidc.IDTokenVerifier) error {
 	tok, err := verifier.Verify(ctx, token)
 	if err != nil {
