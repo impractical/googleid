@@ -8,7 +8,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/coreos/go-oidc"
+	"github.com/coreos/go-oidc/v3/oidc"
 )
 
 var (
