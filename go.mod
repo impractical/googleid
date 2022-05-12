@@ -2,7 +2,7 @@ module impractical.co/googleid
 
 go 1.17
 
-require github.com/coreos/go-oidc/v3 v3.1.0
+require github.com/coreos/go-oidc/v3 v3.2.0
 
 require (
 	github.com/golang/protobuf v1.2.0 // indirect
