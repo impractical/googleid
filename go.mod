@@ -1,6 +1,6 @@
 module impractical.co/googleid
 
-go 1.17
+go 1.20
 
 require github.com/coreos/go-oidc/v3 v3.9.0
 
